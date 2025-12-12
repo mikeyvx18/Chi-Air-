@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Upload Portal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Data Processing Portal</h1>
+            <p>Upload your data files and get instant results</p>
+        </header>
+
+        <main class="main-content">
+            <!-- Upload Section -->
+            <section class="upload-section">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📊</div>
+                    <h2>Drop your files here</h2>
+                    <p class="upload-subtext">or click to browse</p>
+                    <input type="file" id="fileInput" class="file-input" multiple accept=".csv,.json,.xlsx,.txt">
+                    <button class="browse-btn">Choose Files</button>
+                </div>
+
+                <div class="file-previews" id="filePreviews"></div>
+
+                <div class="upload-actions">
+                    <button class="upload-btn" id="uploadBtn" disabled>Process Files</button>
+                    <button class="clear-btn" id="clearBtn">Clear All</button>
+                </div>
+            </section>
+
+            <!-- Output Section -->
+            <section class="output-section" id="outputSection" style="display: none;">
+                <div class="output-header">
+                    <h2>Processing Results</h2>
+                    <div class="output-status">
+                        <span class="status-badge" id="statusBadge">Processing...</span>
+                    </div>
+                </div>
+
+                <div class="output-content" id="outputContent">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="output-stats" id="outputStats"></div>
+                </div>
+
+                <div class="download-actions">
+                    <button class="download-btn" id="downloadBtn">Download Results</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // File upload functionality
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const filePreviews = document.getElementById('filePreviews');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const outputSection = document.getElementById('outputSection');
+        
+        let selectedFiles = [];
+
+        // Click to browse
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        function handleFiles(files) {
+            selectedFiles = Array.from(files);
+            displayFilePreviews();
+            uploadBtn.disabled = selectedFiles.length === 0;
+        }
+
+        function displayFilePreviews() {
+            filePreviews.innerHTML = '';
+            selectedFiles.forEach((file, index) => {
+                const preview = document.createElement('div');
+                preview.className = 'file-preview';
+                preview.innerHTML = `
+                    <div class="file-info">
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-size">${formatFileSize(file.size)}</div>
+                    </div>
+                    <button class="remove-file" onclick="removeFile(${index})">×</button>
+                `;
+                filePreviews.appendChild(preview);
+            });
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            displayFilePreviews();
+            uploadBtn.disabled = selectedFiles.length === 0;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Upload button click
+        uploadBtn.addEventListener('click', () => {
+            outputSection.style.display = 'block';
+            // Simulate processing
+            setTimeout(() => {
+                document.getElementById('statusBadge').textContent = 'Completed';
+                document.getElementById('statusBadge').classList.add('completed');
+                document.getElementById('progressFill').style.width = '100%';
+            }, 2000);
+        });
+
+        // Clear button
+        clearBtn.addEventListener('click', () => {
+            selectedFiles = [];
+            filePreviews.innerHTML = '';
+            uploadBtn.disabled = true;
+            outputSection.style.display = 'none';
+            fileInput.value = '';
+        });
+    </script>
+</body>
+</html>
